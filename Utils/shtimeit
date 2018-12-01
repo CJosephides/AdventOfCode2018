@@ -1,0 +1,22 @@
+#!/bin/bash
+
+n=100;
+
+while getopts 'n:' flag; do
+    case "${flag}" in
+        n) n=${OPTARG} ;;
+    esac
+done
+
+t_start=$(date +%s%N)
+
+# Main loop 
+for i in `seq ${n}`; 
+do 
+    ${@: -1} > /dev/null; 
+done
+
+t_elapsed=$((($(date +%s%N) - $t_start)))
+t_elapsed_ms=$(echo "scale=3; $t_elapsed / $n / 1000" | bc )  # nano to micro
+
+echo "($n loops) average execution time per loop = $t_elapsed_ms microseconds."
