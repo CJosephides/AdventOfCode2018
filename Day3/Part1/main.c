@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define MATSIZE 1000
+#define INPUTSIZE 1375
+#define LINELEN 25
 
 int *matrix;
 
@@ -34,6 +36,32 @@ int count_overlaps(int *matrix)
     return overlaps;
 }
 
+int find_unique_claim(int *matrix)
+{
+    /* Read file line by line. */
+    char *lines[INPUTSIZE];
+    FILE *fp;
+    fp = fopen("input.dat", "r");
+
+    char buffer[LINELEN];
+    int claim_id, left, top, width, height, i, j, l, overlaps;
+    for (l = 0; l < INPUTSIZE; l++) {
+        fscanf(fp, "#%d @ %d,%d: %dx%d\n", &claim_id, &left, &top, &width, &height);
+        /* Scan matrix. */
+        overlaps = 0;
+        for (i=top; i<top+height; i++) {
+             for (j=left; j<left+width; j++) {
+                 overlaps += matrix[j + i * MATSIZE];
+             }
+        }
+        if (overlaps == width * height) {
+            fclose(fp);
+            return claim_id;
+        }
+    }
+    return -1;
+}
+
 int main(int argc, char **argv)
 {
 
@@ -44,20 +72,28 @@ int main(int argc, char **argv)
         exit(1);
     } 
 
-    /* Read stdin line by line. */
-    int claim_id, left, top, width, height, i, j;
-    while (scanf("#%d @ %d,%d: %dx%d\n", &claim_id, &left, &top, &width, &height) == 5) {
-        //printf("claim=%d, left=%d, top=%d, width=%d, height=%d\n", claim_id, left, top, width, height);
+    /* Read file line by line. */
+    char *lines[INPUTSIZE];
+    FILE *fp;
+    fp = fopen("input.dat", "r");
+
+    char buffer[LINELEN];
+    int claim_id, left, top, width, height, i, j, l;
+    for (l = 0; l < INPUTSIZE; l++) {
+        fscanf(fp, "#%d @ %d,%d: %dx%d\n", &claim_id, &left, &top, &width, &height);
         /* Update matrix. */
-       for (i=top; i<top+height; i++) {
-            for (j=left; j<left+width; j++) {
-                matrix[j + i * MATSIZE]++;
-            }
-       }
+        for (i=top; i<top+height; i++) {
+             for (j=left; j<left+width; j++) {
+                 matrix[j + i * MATSIZE]++;
+             }
+        }
     }
+
+    fclose(fp);
 
     //print_matrix(matrix);
     printf("Found %d overlaps.\n", count_overlaps(matrix));
+    printf("Unique claim id = %d.\n", find_unique_claim(matrix));
 
     free(matrix);  // deallocate our matrix
     return 0;
