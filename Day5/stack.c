@@ -28,6 +28,12 @@ int insert(char x)
     return stack_index;
 }
 
+/* Purges the stack. */
+void purge()
+{
+    stack_index = 0;
+}
+
 /* Tailored stack operations. */
 
 /* polymerize checks if the character to be inserted can annihilate 
@@ -50,6 +56,17 @@ int polymerize(char x)
     /* Otherwise x annihilates y and we put neither back. */
 
     return stack_index;
+}
+
+/* polymerize_reject first checks if x is not r and then polymerizes;
+ * otherise, does nothing. r must be lowercase. */
+int polymerize_reject(char x, char r)
+{
+    if (x != r && x != r - 32) {
+        return polymerize(x);
+    } else {
+        return stack_index;
+    }
 }
 
 /* dump prints the stack in reverse. */
