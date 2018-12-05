@@ -106,6 +106,29 @@ int main(int argc, char **argv)
     }
     printf("Sleepiest minute is %d.\n", sleepiest_minute);
 
+    /* Most sleepy minute. */
+    int guard_sleepiest_minute = -1;
+    int guard_sleepiest_minute_sleeps = 0;
+    sleepiest_minute = -1;
+    sleepiest_minute_sleeps = 0;
+    for (i = 0; i < MAXGUARDS; i++) {
+        guard_sleepiest_minute_sleeps = 0;
+        guard_sleepiest_minute = -1;
+        for (k = 0; k < 60; k++) {
+            if (guards[i]->sleeps[k] > guard_sleepiest_minute_sleeps) {
+                guard_sleepiest_minute_sleeps = guards[i]->sleeps[k];
+                guard_sleepiest_minute = k;
+            }
+        }
+        if (guard_sleepiest_minute_sleeps > sleepiest_minute_sleeps) {
+            sleepiest_minute_sleeps = guard_sleepiest_minute_sleeps;
+            sleepiest_minute = guard_sleepiest_minute;
+            max_guard_id = i;
+        }
+    }
+
+    printf("Guard #%d had the most sleepiest minute %d.", max_guard_id, sleepiest_minute);
+
     /* Clear up. */
     for (i = 0; i < INPUTSIZE; free(lines[i++]));
     free(lines);
