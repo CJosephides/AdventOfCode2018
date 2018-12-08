@@ -12,25 +12,6 @@ int main(int argc, char **argv)
     graph->c = '\0';
     graph->next = NULL;
 
-    /*
-    NodePtr a = insert_node('A', graph);
-    NodePtr b = insert_node('B', graph);
-    NodePtr c = insert_node('C', graph);
-    NodePtr d = insert_node('D', graph);
-    NodePtr e = insert_node('E', graph);
-    NodePtr f = insert_node('F', graph);
-
-    insert_dependency('C', find_node('A', graph));
-    insert_dependency('C', find_node('F', graph));
-    insert_dependency('A', find_node('B', graph));
-    insert_dependency('A', find_node('D', graph));
-    insert_dependency('B', find_node('E', graph));
-    insert_dependency('D', find_node('E', graph));
-    insert_dependency('F', find_node('E', graph));
-
-    print_graph_dependencies(graph);
-    */
-
     /* Read in graph from file. */
     FILE *fp = fopen(INPUT_FILE, "rb");
     char source, destination;
@@ -45,20 +26,52 @@ int main(int argc, char **argv)
 
         insert_dependency(source, find_node(destination, graph));
     }
-    fclose(fp);
 
     print_graph_dependencies(graph);
 
-    NodePtr node_to_pop;
-    NodePtr node;
-    while ((node_to_pop = next_node_without_dependencies(graph)) != NULL) {
-        for (node = graph; node != NULL; node = node->next) {
-            remove_dependency(node_to_pop->c, node);
-        }
-        remove_node(node_to_pop->c, graph);
-        printf("%c", node_to_pop->c);
+    /* Initialize workers. */
+    int w;
+    Worker *workers = calloc(5, sizeof(Worker));
+    for (w = 0; w < 5; w++) {
+        workers[w].busy = 0;
+        workers[w].node = NULL;
+        workers[w].finish_time = -1;
     }
-    printf("\n");
 
+    int time = 0;
+    while (graph->next != NULL || num_busy_workers(workers) > 0) {
+
+        /* Check if any workers have finished. */
+        for (w = 0; w < 5; w++) {
+            if (workers[w].finish_time == time) {
+                remove_dependency_from_all_nodes(workers[w].node->c, graph);
+                workers[w].busy = 0;
+                workers[w].node = NULL;
+                workers[w].finish_time = -1;
+            }
+        }
+
+        /* Assign new tasks to workers, as much as we can. */
+        NodePtr next_node;
+        while ((next_node = next_node_without_dependencies(graph)) != NULL) {
+            if (num_busy_workers(workers) == 5) {
+                break;
+            } else {
+                // remove from graph
+                remove_node(next_node->c, graph);
+                // assign to worker
+                w = next_free_worker_index(workers);
+                workers[w].busy = 1;
+                workers[w].node = next_node;
+                workers[w].finish_time = time + 60 + ((next_node->c) - 64);
+            }
+        }
+
+        /* Increment time. */
+        time++;
+    }
+
+
+    printf("Total time = %d.\n", time - 1);
     return 0;
 }

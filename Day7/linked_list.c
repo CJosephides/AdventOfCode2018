@@ -11,6 +11,7 @@ NodePtr insert_node(char c, NodePtr graph)
     new_node_ptr->c = c;
     new_node_ptr->next = NULL;
     new_node_ptr->dependencies = NULL;
+    new_node_ptr->in_progress = 0;
 
     /* Insert while maintaining alphabetical sorting. */
     while (graph->next != NULL) {
@@ -146,4 +147,33 @@ NodePtr next_node_without_dependencies(NodePtr graph)
     }
 
     return NULL;
+}
+
+void remove_dependency_from_all_nodes(char c, NodePtr graph)
+{
+    NodePtr node;
+    for (node = graph; node != NULL; node = node->next) {
+        remove_dependency(c, node);
+    }
+}
+
+int num_busy_workers(WorkerPtr workers)
+{
+    int i, n = 0;
+    for (i = 0; i < 5; i++) {
+        if (workers[i].busy == 1)
+            n++;
+    }
+    return n;
+}
+
+int next_free_worker_index(WorkerPtr workers)
+{
+    int i;
+    for (i = 0; i < 5; i++) {
+        if (workers[i].busy == 0) {
+            return i;
+        }
+    }
+    return -1;
 }
