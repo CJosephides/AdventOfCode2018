@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     
     int next_marble, next_player;
 
-    int scores[num_players];
+    long long scores[num_players];
     for (next_player = 0; next_player < num_players; scores[next_player++] = 0);
     next_marble = 1;
     next_player = 0;
@@ -45,12 +45,13 @@ int main(int argc, char **argv)
         //print_marbles(current);
     }
 
-    int i, max_score = 0;
+    int i;
+    long long max_score = 0;
     for (i = 0; i < num_players; i++) {
         if (scores[i] > max_score)
             max_score = scores[i];
     }
-    printf("Highest score = %d.\n", max_score);
+    printf("Highest score = %lld.\n", max_score);
 
     return 0;
 }
