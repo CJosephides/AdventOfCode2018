@@ -3,7 +3,7 @@
 #include <string.h>
 #include "main.h"
 #define MAXPAT 6
-#define LINEHLEN 200
+#define LINEHLEN 2000
 #define PATLEN 5
 
 void print_position(const char *position)
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     fclose(fp);
 
     for (i = 0; i < n_patterns; i++) {
-        printf("[%d] Read pattern: %s => %c\n", i, patterns[i].string, patterns[i].result);
+        //printf("[%d] Read pattern: %s => %c\n", i, patterns[i].string, patterns[i].result);
     }
 
     /* Initialize a string to hold the current line. */
@@ -86,24 +86,26 @@ int main(int argc, char **argv)
     current_line[2 * LINEHLEN] = '\0';
 
     fclose(fp);
-    print_position(current_line);
+    //print_position(current_line);
 
     /* Update. */
+    int q;
     char *next_line = calloc(1 + 2 * LINEHLEN, sizeof(char));
     for (i = 0; i < atoi(argv[3]); i++) {
         update(current_line, patterns, n_patterns, next_line);
-        print_position(next_line);
+        //print_position(next_line);
         strcpy(current_line, next_line);
+
+        /* Sum plants. */
+        int sum = 0;
+        for (q = 0; q < 1 + 2 * LINEHLEN; q++) {
+            if (current_line[q] == '#') {
+                sum += q - LINEHLEN;
+            }
+        }
+        printf("%d,%d\n", i, sum);
     }
 
-    /* Sum plants. */
-    int sum = 0;
-    for (i = 0; i < 1 + 2 * LINEHLEN; i++) {
-        if (current_line[i] == '#') {
-            sum += i - LINEHLEN;
-        }
-    }
-    printf("Sum = %d.\n", sum);
 
     return 0;
 }
