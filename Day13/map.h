@@ -18,6 +18,7 @@ typedef struct cart {
     enum orientation direction; 
     enum boolean moved;
     enum intersection turn;
+    enum boolean collided;
 
 } Cart, *CartPtr;
 
@@ -26,6 +27,7 @@ void print_map(char **map);
 void print_mapcarts(char **map, CartPtr *carts);
 CartPtr next_cart(CartPtr *carts);
 CartPtr collision(CartPtr cart, CartPtr *carts);
+int num_live(CartPtr *carts);
 void update(char **map, CartPtr *carts);
 
 #endif

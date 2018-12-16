@@ -20,6 +20,7 @@ void read_input(FILE *fp, char **map, CartPtr *carts)
                 carts[k]->i = i;
                 carts[k]->j = j;
                 carts[k]->moved = false;
+                carts[k]->collided = false;
                 carts[k]->turn = left;
                 switch (c)
                 {
@@ -83,6 +84,11 @@ void print_mapcarts(char **map, CartPtr *carts)
     CartPtr cart;
     k = 0;
     while ((cart = carts[k]) != NULL) {
+        if (cart->collided == true) {
+            k++;
+            continue;
+        }
+
         switch (cart->direction)
         {
             case north:
@@ -123,6 +129,11 @@ CartPtr next_cart(CartPtr *carts)
     CartPtr cart;
     int k = 0;
     while ((cart = carts[k]) != NULL) {
+        if (cart->collided == true) {
+            k++;
+            continue;
+        }
+
         if (cart->moved != true) {
 
             if (cart->i < min_i) {
@@ -150,6 +161,10 @@ CartPtr collision(CartPtr cart, CartPtr *carts)
     CartPtr other_cart;
     
     for (k = 0; k < MAXCART && carts[k] != NULL; k++) {
+        if (carts[k]->collided == true) {
+            continue;
+        }
+
         if (carts[k] != cart) {
             if ((carts[k]->i == cart->i) && (carts[k]->j == cart->j))
                 return carts[k];
@@ -158,19 +173,43 @@ CartPtr collision(CartPtr cart, CartPtr *carts)
     return NULL;
 }
 
+/* Returns number of live carts. */
+int num_live(CartPtr *carts)
+{
+    int k;
+    int num_live = 0;
+    CartPtr cart;
+
+    for (k = 0; k < MAXCART && carts[k] != NULL; k++) {
+        if (carts[k]->collided == false)
+            num_live++;
+    }
+
+    return num_live;
+}
+
 /* Advances carts by one tick. */
 void update(char **map, CartPtr *carts)
 {
 
-    int i, j, k;
+    int i, j, k, num_carts;
     CartPtr cart;
+    CartPtr other_cart;
+
 
     /* Refresh all cart movements. */
     for (k = 0; k < MAXCART && carts[k] != NULL; k++) {
-        carts[k]->moved = false;
+        if (carts[k]->collided == true) {
+            carts[k]->moved = true;
+        } else {
+            carts[k]->moved = false;
+        }
     }
 
     while ((cart = next_cart(carts)) != NULL) {
+
+        if (cart->collided == true)
+            continue;
 
         /* Move cart according to its orientation. */
         switch (cart->direction)
@@ -190,12 +229,14 @@ void update(char **map, CartPtr *carts)
         }
         
         /* Check for collisions first. */
-        if (collision(cart, carts) != NULL) {
-            printf("Detected collision at X = %d, Y = %d.\n", cart->j, cart->i);
-            break;
+        if ((other_cart = collision(cart, carts)) != NULL) {
+            //printf("Detected collision at X = %d, Y = %d.\n", cart->j, cart->i);
+            cart->collided = true;
+            other_cart->collided = true;
         }
 
         /* Re-orient, if we are at a bend. */
+        // TODO use modulus, like we did for turning
         if (map[cart->i][cart->j] == '/') {
             switch (cart->direction)
             {
@@ -250,6 +291,17 @@ void update(char **map, CartPtr *carts)
 
         /* Finally, mark as moved. */
         cart->moved = true;
+    }
+
+    /* Count number of live carts at the end of the tick. */
+    num_carts = num_live(carts);
+    printf("Number of live carts = %d.\n", num_carts);
+    if (num_carts == 1) {
+        for (k = 0; k < MAXCART && carts[k] != NULL; k++) {
+            if (carts[k]->collided == false) {
+                printf("There is only one cart remaining, at position: X = %d, Y = %d.\n", carts[k]->j, carts[k]->i);
+            }
+        }
     }
     
 }
